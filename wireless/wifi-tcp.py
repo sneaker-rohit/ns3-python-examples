@@ -51,7 +51,7 @@ def CalculateThroughput ():
   now = ns.core.Simulator.Now ()
   #Convert Application RX Packets to MBits.
   cur = (sink.GetTotalRx () - lastTotalRx) * 8/1e5
-  print  str(now.GetSeconds ()) + "s: \t" + str (cur) + "Mbit/s"
+  print  str (now.GetSeconds ()) + "s: \t" + str (cur) + " Mbit/s"
   lastTotalRx = sink.GetTotalRx ()
   ns.core.Simulator.Schedule (ns.core.MilliSeconds (100), CalculateThroughput)
 
@@ -73,7 +73,9 @@ def main(argv):
 
   cmd.AddValue ("payloadSize", "Payload size in bytes")
   cmd.AddValue ("dataRate", "Application data ate")
-  cmd.AddValue ("tcpVariant", "Transport protocol to use: TcpTahoe, TcpReno, TcpNewReno, TcpWestwood, TcpWestwoodPlus ")
+  cmd.AddValue ("tcpVariant", "Transport protocol to use: TcpNewReno, "
+                "TcpHybla, TcpHighSpeed, TcpHtcp, TcpVegas, TcpScalable, TcpVeno, "
+                "TcpBic, TcpYeah, TcpIllinois, TcpWestwood, TcpWestwoodPlus ")
   cmd.AddValue ("phyRate", "Physical layer bitrate")
   cmd.AddValue ("simulationTime", "Simulation time in seconds")
   cmd.AddValue ("pcap", "Enable/disable PCAP Tracing")
