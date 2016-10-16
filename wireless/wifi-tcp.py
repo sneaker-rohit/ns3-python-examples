@@ -46,11 +46,12 @@ sink = ns.applications.PacketSink ()
 lastTotalRx = 0              
 
 def CalculateThroughput ():
+  global lastTotalRx
   #Return the simulator's virtual time. 
   now = ns.core.Simulator.Now ()
   #Convert Application RX Packets to MBits.
-  cur = (sink.GetTotalRx () - lastTotalRx) * (8/1e5)
-  print now.GetSeconds () + "s: \t" + cur + "Mbit/s"
+  cur = (sink.GetTotalRx () - lastTotalRx) * 8/1e5
+  print  str(now.GetSeconds ()) + "s: \t" + str (cur) + "Mbit/s"
   lastTotalRx = sink.GetTotalRx ()
   ns.core.Simulator.Schedule (ns.core.MilliSeconds (100), CalculateThroughput)
 
@@ -62,7 +63,7 @@ def main(argv):
   #Application layer datarate.
   cmd.dataRate = "100Mbps"                  
   #TCP variant type. 
-  cmd.tcpVariant = "ns3::TcpNewReno"        
+  cmd.tcpVariant = "TcpNewReno"        
   #Physical layer bitrate. 
   cmd.phyRate = "HtMcs7"                    
   #Simulation time in seconds. 
@@ -81,7 +82,15 @@ def main(argv):
   #No fragmentation and no RTS/CTS 
   ns.core.Config.SetDefault ("ns3::WifiRemoteStationManager::FragmentationThreshold", ns.core.StringValue ("999999"))
   ns.core.Config.SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", ns.core.StringValue ("999999"))
-
+  
+  if cmd.tcpVariant == "TcpWestwoodPlus":
+    # TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
+    ns.core.Config.SetDefault ("ns3::TcpL4Protocol::SocketType", ns.core.TypeIdValue (ns.core.TcpWestwood.GetTypeId ()))
+    # the default protocol type in ns3::TcpWestwood is WESTWOOD
+    ns.core.Config.SetDefault ("ns3::TcpWestwood::ProtocolType", ns.core.EnumValue (ns.core.TcpWestwood.WESTWOODPLUS))
+  else:
+    ns.core.Config.SetDefault ("ns3::TcpL4Protocol::SocketType", ns.core.TypeIdValue (ns.core.TypeId.LookupByName ("ns3::" + cmd.tcpVariant)))
+  
   #Configure TCP Options 
   ns.core.Config.SetDefault ("ns3::TcpSocket::SegmentSize", ns.core.UintegerValue (cmd.payloadSize))
 
@@ -187,7 +196,7 @@ def main(argv):
 
   averageThroughput = ((sink.GetTotalRx () * 8) / (1e6  * cmd.simulationTime))
   if averageThroughput < 50:  
-      ns.core.NS_LOG_ERROR ("Obtained throughput is not in the expected boundaries!")
+      print "Obtained throughput is not in the expected boundaries!"
       exit (1)
   print "Average throughput: " + averageThroughput + " Mbit/s"
   return 0
