@@ -66,7 +66,7 @@ def main (argv):
   cmd.AddValue ("nStas", "Number of stations per wifi network")
   cmd.AddValue ("SendIp", "Send Ipv4 or raw packets")
   cmd.AddValue ("writeMobility", "Write mobility trace")
-  cmd.Parse (argv)
+  cmd.Parse (sys.argv)
 
   backboneNodes = ns.network.NodeContainer ()
   backboneDevices = ns.network.NetDeviceContainer ()
@@ -155,30 +155,29 @@ def main (argv):
 
   dest = ns.network.Address ()
   if sendIp:
-      dest = ns.network.InetSocketAddress (staInterfaces[1].GetAddress (1), 1025)
+      dest = ns.network.InetSocketAddress (staInterfaces(1).GetAddress (1), 1025)
       protocol = "ns3::UdpSocketFactory"
   else:
       tmp = ns.network.PacketSocketAddress ()
-      tmp.SetSingleDevice (staDevices[0].Get (0).GetIfIndex ())
-      tmp.SetPhysicalAddress (staDevices[1].Get (0).GetAddress ())
+      tmp.SetSingleDevice (staDevices(0).Get (0).GetIfIndex ())
+      tmp.SetPhysicalAddress (staDevices(1).Get (0).GetAddress ())
       tmp.SetProtocol (0x807)
       dest = tmp
       protocol = "ns3::PacketSocketFactory"
 
   onoff = ns.applications.OnOffHelper (protocol, dest)
   onoff.SetConstantRate (ns.core.DataRate ("500kb/s"))
-  apps = ns.applications.ApplicationContainer (onoff.Install (staNodes[0].Get (0)))
+  apps = ns.applications.ApplicationContainer (onoff.Install (staNodes(0).Get (0)))
   apps.Start (ns.core.Seconds (0.5))
   apps.Stop (ns.core.Seconds (3.0))
 
-  wifiPhy.EnablePcap ("wifi-wired-bridging", apDevices[0])
-  wifiPhy.EnablePcap ("wifi-wired-bridging", apDevices[1])
+  wifiPhy.EnablePcap ("wifi-wired-bridging", apDevices(0))
+  wifiPhy.EnablePcap ("wifi-wired-bridging", apDevices(1))
 
   if writeMobility:
       ascii = ns.core.AsciiTraceHelper ()
       ns.mobility.MobilityHelper.EnableAsciiAll (ascii.CreateFileStream ("wifi-wired-bridging.mob"))
   
-
   ns.core.Simulator.Stop (ns.core.Seconds (5.0))
   ns.core.Simulator.Run ()
   ns.core.Simulator.Destroy ()
